@@ -1,0 +1,9 @@
+{
+  "name": "Money Tracker",
+  "short_name": "Money Tracker",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f6f2",
+  "theme_color": "#102b25",
+  "description": "Private daily income and expense tracker"
+}

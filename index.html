@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#102b25">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Money Tracker">
+<link rel="manifest" href="manifest.json">
+<title>Money Tracker</title>
+<style>
+:root{--bg:#f4f6f2;--card:#fff;--ink:#172923;--muted:#718078;--green:#1f6b50;--line:#e2e8e2;--red:#b64343;--gold:#f0b94b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+header{background:#102b25;color:white;padding:24px 18px 22px;border-radius:0 0 24px 24px}header .eyebrow{opacity:.75;font-size:12px;text-transform:uppercase;letter-spacing:1.5px}header h1{font-size:26px;margin:7px 0 4px}header p{margin:0;color:#d1e0d8;font-size:13px}
+main{max-width:760px;margin:auto;padding:16px 14px 40px}.cyclebar{display:flex;gap:8px;align-items:center;margin:0 0 14px}.cyclebar select{flex:1}
+select,input,button{font:inherit;border-radius:12px;border:1px solid var(--line);padding:12px;background:#fff;color:var(--ink);min-width:0}button{cursor:pointer;font-weight:650}button.primary{background:var(--green);color:white;border-color:var(--green)}button.ghost{background:#eef3ee}button.danger{color:var(--red);background:#fff1f1;border-color:#f0d5d5}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.stat{background:var(--card);padding:15px;border-radius:17px;border:1px solid var(--line);min-width:0}.stat .label{font-size:12px;color:var(--muted);margin-bottom:7px}.stat .amount{font-size:clamp(18px,4.8vw,24px);font-weight:750;overflow-wrap:anywhere}.stat .sub{font-size:11px;color:var(--muted);margin-top:5px}.income{color:var(--green)}.expense{color:var(--red)}
+.section{margin-top:20px}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.sectionhead h2{font-size:18px;margin:0}.sectionhead small{color:var(--muted)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:15px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.formgrid label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}.field{min-width:0}.field input,.field select{width:100%}.field.full{grid-column:1/-1}.typebuttons{display:flex;gap:8px}.typebuttons button{flex:1}.typebuttons button.active{background:var(--green);border-color:var(--green);color:white}.formactions{display:flex;gap:8px;margin-top:12px}.formactions button{flex:1}
+.budgetrow{display:flex;gap:8px}.budgetrow input{flex:1;width:50%}.progress{height:9px;background:#e9eee9;border-radius:99px;overflow:hidden;margin:12px 0 6px}.progress span{display:block;height:100%;background:var(--green);width:0%;border-radius:99px}.progress.over span{background:var(--red)}
+.chart{display:flex;align-items:end;gap:12px;height:130px;padding:12px 6px 0}.barcol{flex:1;height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:6px;min-width:0}.bars{height:95px;display:flex;align-items:end;gap:4px;width:100%;justify-content:center}.bar{width:min(25px,42%);border-radius:6px 6px 2px 2px;min-height:2px}.bar.in{background:#318568}.bar.out{background:#d97575}.barlabel{font-size:11px;color:var(--muted)}.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:8px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}.dot.in{background:#318568}.dot.out{background:#d97575}
+.list{display:flex;flex-direction:column;gap:8px}.tx{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}.txicon{width:40px;height:40px;display:grid;place-items:center;background:#eef4ef;border-radius:12px;font-size:19px;flex-shrink:0}.txmain{flex:1;min-width:0}.txmain strong{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.txmain small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.txamount{font-weight:750;font-size:14px;white-space:nowrap}.txactions{display:flex;gap:4px;margin-left:3px}.txactions button{padding:7px 8px;font-size:12px}.empty{color:var(--muted);text-align:center;padding:24px 10px;font-size:14px}
+.note{font-size:12px;line-height:1.5;color:var(--muted);margin-top:10px}.foot{font-size:11px;color:var(--muted);text-align:center;margin-top:24px}
+@media(min-width:600px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.stat .amount{font-size:22px}}
+</style>
+</head>
+<body>
+<header><div class="eyebrow">Personal finance</div><h1>Money Tracker</h1><p>Your salary cycle, your money — from the 25th to the 24th.</p></header>
+<main>
+  <div class="cyclebar">
+    <select id="cycleSelect" aria-label="Salary cycle"></select>
+    <button class="ghost" id="exportBtn">Export CSV</button>
+  </div>
+  <div class="grid">
+    <div class="stat"><div class="label">Total income</div><div class="amount income" id="totalIncome">£0.00</div><div class="sub">This salary cycle</div></div>
+    <div class="stat"><div class="label">Total expenses</div><div class="amount expense" id="totalExpense">£0.00</div><div class="sub">This salary cycle</div></div>
+    <div class="stat"><div class="label">Money left</div><div class="amount" id="leftover">£0.00</div><div class="sub">Income minus expenses</div></div>
+    <div class="stat"><div class="label">Budget remaining</div><div class="amount" id="budgetLeft">Not set</div><div class="sub" id="budgetSub">Set a budget below</div></div>
+  </div>
+  <section class="section">
+    <div class="sectionhead"><h2>Monthly budget</h2><small id="budgetCycleLabel"></small></div>
+    <div class="panel">
+      <div class="budgetrow"><input id="budgetInput" type="number" min="0" step="0.01" placeholder="Set budget (£)"><button class="primary" id="saveBudget">Save budget</button></div>
+      <div class="progress" id="budgetProgress"><span id="budgetBar"></span></div>
+      <div id="budgetStatus" class="note">Budget is saved separately for each salary cycle.</div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="sectionhead"><h2>Add transaction</h2><small id="editLabel"></small></div>
+    <div class="panel">
+      <div class="typebuttons"><button class="active" type="button" data-type="expense">Expense</button><button type="button" data-type="income">Income</button></div>
+      <form id="txForm">
+        <div class="formgrid" style="margin-top:12px">
+          <div class="field full"><label for="description">Description</label><input id="description" required maxlength="80" placeholder="e.g. groceries, salary, fuel"></div>
+          <div class="field"><label for="amount">Amount (£)</label><input id="amount" required type="number" min="0.01" step="0.01" placeholder="0.00"></div>
+          <div class="field"><label for="date">Date</label><input id="date" required type="date"></div>
+          <div class="field"><label for="category">Category</label><select id="category"></select></div>
+          <div class="field"><label for="method">Payment method</label><select id="method"><option>Card</option><option>Cash</option><option>Bank transfer</option><option>Direct debit</option><option>Other</option></select></div>
+        </div>
+        <div class="formactions"><button class="primary" id="saveTx" type="submit">Save transaction</button><button class="ghost" id="cancelEdit" type="button" hidden>Cancel edit</button></div>
+      </form>
+      <div class="note">Your entries are stored on this device in this browser. Export a CSV backup regularly.</div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="sectionhead"><h2>Income vs expenses</h2><small>Last 6 cycles</small></div>
+    <div class="panel"><div id="chart" class="chart"></div><div class="legend"><span><i class="dot in"></i>Income</span><span><i class="dot out"></i>Expenses</span></div></div>
+  </section>
+  <section class="section">
+    <div class="sectionhead"><h2>Transactions</h2><small id="txCount">0 entries</small></div>
+    <div id="transactions" class="list"></div>
+  </section>
+  <div class="foot">Money Tracker · Private to this browser/device · GBP (£)</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const cats={
+ expense:["Rent","Bills","Groceries","Eating out","Fuel & transport","Car","Health","Shopping","Subscriptions","Household","Travel","Other expense"],
+ income:["Salary","Delivery work","Refund","Interest","Other income"]
+};
+const icons={"Rent":"🏠","Bills":"💡","Groceries":"🛒","Eating out":"🍽️","Fuel & transport":"⛽","Car":"🚗","Health":"💊","Shopping":"🛍️","Subscriptions":"📱","Household":"🧺","Travel":"🧳","Other expense":"💸","Salary":"💼","Delivery work":"🚗","Refund":"↩️","Interest":"🏦","Other income":"💷"};
+const today=new Date(); const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const money=n=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(n||0);
+const read=(key,def)=>{try{return JSON.parse(localStorage.getItem(key))??def}catch{return def}};
+let transactions=read('mt_transactions',[]), budgets=read('mt_budgets',{}), selectedType='expense', editingId=null;
+function cycleKey(dateStr){let d=new Date(dateStr+'T12:00:00');let y=d.getFullYear(),m=d.getMonth(),day=d.getDate();if(day<25){m-=1;if(m<0){m=11;y--}}return `${y}-${String(m+1).padStart(2,'0')}-25`}
+function cycleBounds(key){let [y,m]=key.split('-').map(Number);let start=new Date(y,m-1,25,12);let end=new Date(y,m,24,12);return {start:iso(start),end:iso(end)}}
+function labelCycle(key){let {start,end}=cycleBounds(key);return `${new Date(start+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})} – ${new Date(end+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}`}
+function save(){localStorage.setItem('mt_transactions',JSON.stringify(transactions));localStorage.setItem('mt_budgets',JSON.stringify(budgets))}
+function currentKey(){return $('cycleSelect').value||cycleKey(iso(today))}
+function setupCycles(){let keys=new Set([cycleKey(iso(today))]);for(const t of transactions)keys.add(cycleKey(t.date));let cur=cycleKey(iso(today));let [y,m]=cur.split('-').map(Number);for(let i=1;i<=11;i++){let d=new Date(y,m-1-i,25,12);keys.add(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-25`)}let sorted=[...keys].sort().reverse();$('cycleSelect').innerHTML=sorted.map(k=>`<option value="${k}">${labelCycle(k)}</option>`).join('');if(sorted.includes(cur))$('cycleSelect').value=cur}
+function setupCategories(){ $('category').innerHTML=cats[selectedType].map(c=>`<option>${c}</option>`).join('')}
+function filtered(){let k=currentKey();return transactions.filter(t=>cycleKey(t.date)===k).sort((a,b)=>b.date.localeCompare(a.date)||b.created-b.created)}
+function render(){let list=filtered(),inc=list.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0),exp=list.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0),left=inc-exp,b=budgets[currentKey()];
+$('totalIncome').textContent=money(inc);$('totalExpense').textContent=money(exp);$('leftover').textContent=money(left);$('leftover').style.color=left<0?'var(--red)':'var(--green)';$('budgetLeft').textContent=b==null?'Not set':money(b-exp);$('budgetSub').textContent=b==null?'Set a budget below':(exp>b?'Budget exceeded':'Budget left');$('budgetCycleLabel').textContent=labelCycle(currentKey());$('budgetInput').value=b==null?'':b;
+let pct=b>0?Math.min(100,exp/b*100):0;$('budgetBar').style.width=pct+'%';$('budgetProgress').classList.toggle('over',b!=null&&exp>b);
+$('budgetStatus').textContent=b==null?'Budget is saved separately for each salary cycle.':exp>b?`You've exceeded your budget by ${money(exp-b)}.`:`You've used ${pct.toFixed(0)}% of your budget (${money(exp)} of ${money(b)}).`;
+$('txCount').textContent=`${list.length} ${list.length===1?'entry':'entries'}`;
+$('transactions').innerHTML=list.length?list.map(t=>`<div class="tx"><div class="txicon">${icons[t.category]||'💷'}</div><div class="txmain"><strong>${esc(t.description)}</strong><small>${esc(t.category)} · ${new Date(t.date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} · ${esc(t.method||'')}</small></div><div class="txamount ${t.type==='income'?'income':'expense'}">${t.type==='income'?'+':'−'}${money(t.amount)}</div><div class="txactions"><button class="ghost" onclick="editTx('${t.id}')">Edit</button><button class="danger" onclick="deleteTx('${t.id}')">×</button></div></div>`).join(''):'<div class="panel empty">No transactions for this salary cycle yet.<br>Add your first income or expense above.</div>';
+renderChart()}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderChart(){let cur=currentKey(),[y,m]=cur.split('-').map(Number),keys=[];for(let i=5;i>=0;i--){let d=new Date(y,m-1-i,25,12);keys.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-25`)}let data=keys.map(k=>{let ts=transactions.filter(t=>cycleKey(t.date)===k);return{k,inc:ts.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0),exp:ts.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)}});let max=Math.max(1,...data.flatMap(d=>[d.inc,d.exp]));$('chart').innerHTML=data.map(d=>`<div class="barcol"><div class="bars"><div class="bar in" title="Income ${money(d.inc)}" style="height:${Math.max(d.inc?3:0,d.inc/max*95)}px"></div><div class="bar out" title="Expenses ${money(d.exp)}" style="height:${Math.max(d.exp?3:0,d.exp/max*95)}px"></div></div><div class="barlabel">${new Date(d.k+'T12:00:00').toLocaleDateString('en-GB',{month:'short'})}</div></div>`).join('')}
+function resetForm(){editingId=null;$('txForm').reset();$('date').value=iso(today);$('method').value='Card';$('editLabel').textContent='';$('saveTx').textContent='Save transaction';$('cancelEdit').hidden=true;setType('expense')}
+function setType(type){selectedType=type;document.querySelectorAll('.typebuttons button').forEach(b=>b.classList.toggle('active',b.dataset.type===type));setupCategories()}
+document.querySelectorAll('.typebuttons button').forEach(b=>b.addEventListener('click',()=>setType(b.dataset.type)));
+$('txForm').addEventListener('submit',e=>{e.preventDefault();let item={id:editingId||crypto.randomUUID(),type:selectedType,description:$('description').value.trim(),amount:Math.round(Number($('amount').value)*100)/100,date:$('date').value,category:$('category').value,method:$('method').value,created:Date.now()};if(!item.description||!item.date||!Number.isFinite(item.amount)||item.amount<=0)return;if(editingId){let old=transactions.find(t=>t.id===editingId);item.created=old?.created||Date.now();transactions=transactions.map(t=>t.id===editingId?item:t)}else transactions.push(item);save();setupCycles();$('cycleSelect').value=cycleKey(item.date);resetForm();render()});
+window.editTx=id=>{let t=transactions.find(x=>x.id===id);if(!t)return;editingId=id;setType(t.type);$('description').value=t.description;$('amount').value=t.amount;$('date').value=t.date;$('category').value=t.category;$('method').value=t.method||'Card';$('editLabel').textContent='Editing transaction';$('saveTx').textContent='Save changes';$('cancelEdit').hidden=false;window.scrollTo({top:0,behavior:'smooth'})};
+window.deleteTx=id=>{let t=transactions.find(x=>x.id===id);if(!t||!confirm(`Delete "${t.description}"?`))return;transactions=transactions.filter(x=>x.id!==id);save();setupCycles();render()};
+$('cancelEdit').addEventListener('click',resetForm);
+$('cycleSelect').addEventListener('change',render);
+$('saveBudget').addEventListener('click',()=>{let v=$('budgetInput').value;if(v===''||!Number.isFinite(Number(v))||Number(v)<0){alert('Enter a budget of £0 or more.');return}budgets[currentKey()]=Math.round(Number(v)*100)/100;save();render()});
+$('exportBtn').addEventListener('click',()=>{let rows=[['Date','Type','Description','Category','Amount GBP','Payment method','Salary cycle'],...transactions.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(t=>[t.date,t.type,t.description,t.category,t.amount.toFixed(2),t.method||'',cycleKey(t.date)])];let csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');let blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='money-tracker.csv';a.click();URL.revokeObjectURL(url)});
+$('date').value=iso(today);setupCategories();setupCycles();render();
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+</html>
